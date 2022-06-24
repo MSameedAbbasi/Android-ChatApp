@@ -1,6 +1,8 @@
 package com.omex.serverchat;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.slice.Slice;
 import android.content.Intent;
@@ -8,10 +10,13 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.text.Layout;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 
 import java.io.BufferedReader;
 import java.io.Console;
@@ -25,7 +30,7 @@ import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
-
+import java.util.List;
 public class MainActivity extends AppCompatActivity {
     String hostname = "192.168.0.57";
     int port = Integer.parseInt("12000");
@@ -40,6 +45,8 @@ public class MainActivity extends AppCompatActivity {
 
     static MainActivity instance;
 
+
+    RecyclerView chatboxview;
     //update_chatbox updateChatbox;
 
     /*boolean printlock;
@@ -58,8 +65,32 @@ public class MainActivity extends AppCompatActivity {
         instance=this;
 
 
+        RecyclerView recyclerView = findViewById(R.id.chat_box_recycler);
+/*
 
-        //printlock =false;
+        // Create and set the layout manager
+        // For the RecyclerView.
+        LinearLayoutManager layoutManager = new LinearLayoutManager(this);
+        recyclerView.setLayoutManager(layoutManager);
+
+        List<ItemClass> itemClasses = new ArrayList<>();
+
+        // pass the arguments
+        itemClasses.add(new ItemClass(ItemClass.LayoutOne,
+                "Item Type 1"));
+        itemClasses.add(new ItemClass( ItemClass.LayoutTwo,
+                "Item Type 2", "Text"));
+
+        AdapterClass adapter = new AdapterClass(itemClasses);
+
+        // set the adapter
+        recyclerView.setAdapter(adapter);
+
+*/
+
+
+
+
 
 
         /*try
@@ -111,6 +142,8 @@ public class MainActivity extends AppCompatActivity {
         msg_update_thread.start();*/
 
 
+
+        chatboxview= findViewById(R.id.chat_box_recycler);
         chat_box =  findViewById(R.id.chat_box);
         listen_to_messages();
         register_name();
@@ -183,8 +216,6 @@ public class MainActivity extends AppCompatActivity {
                         String got_msg = chk_msg(serverMessage);
                         Log.i("Message from Server 2", "run: " + got_msg);
 
-
-
                         ///updateChatbox = new update_chatbox();
                         //updateChatbox.execute(got_msg);
 
@@ -195,6 +226,7 @@ public class MainActivity extends AppCompatActivity {
                             public void run() {
                                 //chat_box.setText(chat_box.getText()+got_msg);
                                 chat_box.append(System.getProperty("line.separator") + got_msg);
+
                             }
                         });
 
@@ -371,6 +403,18 @@ public class MainActivity extends AppCompatActivity {
         return msg;
     }
 
+    public void orderbtn(View v2){
+
+
+        Intent intent = new Intent(MainActivity.this,MakeOrder.class);
+        /*if (clientset!= null) {
+            String[] templist = Arrays.copyOfRange(clientset, 0, clientset.length - 1);
+            intent.putExtra("username_list", templist *//*active_users*//*);
+        }*/
+        startActivity(intent);
+        //this.finish();
+
+    }
 
     public void userlistbtn(View v2){
 
