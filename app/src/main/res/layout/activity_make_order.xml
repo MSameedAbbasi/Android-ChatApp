@@ -5,23 +5,25 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#717A80"
-    tools:context=".MakeOrder">
+    tools:context=".MakeOrder"
+    tools:layout_editor_absoluteX="2dp"
+    tools:layout_editor_absoluteY="9dp">
 
     <Spinner
         android:id="@+id/account"
         android:layout_width="209dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="36dp"
         android:layout_marginEnd="1dp"
         android:layout_marginRight="1dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toBottomOf="@+id/textView9" />
 
     <Spinner
         android:id="@+id/side"
         android:layout_width="209dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="36dp"
         android:layout_marginEnd="1dp"
         android:layout_marginRight="1dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -31,17 +33,17 @@
         android:id="@+id/type"
         android:layout_width="209dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="34dp"
+        android:layout_marginTop="36dp"
         android:layout_marginEnd="1dp"
         android:layout_marginRight="1dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/price" />
+        app:layout_constraintTop_toBottomOf="@+id/textView4" />
 
     <Spinner
         android:id="@+id/tif"
         android:layout_width="209dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="36dp"
         android:layout_marginEnd="1dp"
         android:layout_marginRight="1dp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -51,16 +53,17 @@
         android:id="@+id/destination"
         android:layout_width="209dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="40dp"
+        android:layout_marginTop="36dp"
         android:layout_marginEnd="1dp"
         android:layout_marginRight="1dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/tif" />
 
     <Button
-        android:id="@+id/button"
+        android:id="@+id/send_order"
         android:layout_width="wrap_content"
         android:layout_height="48dp"
+        android:onClick="send_order"
         android:text="Send Order"
         app:backgroundTint="#250250"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -68,6 +71,20 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/destination" />
+
+    <TextView
+        android:id="@+id/textView9"
+        android:layout_width="0dp"
+        android:layout_height="22dp"
+        android:gravity="center|center_vertical"
+        android:text="Symbol"
+        android:textSize="16sp"
+        app:flow_horizontalAlign="center"
+        app:flow_verticalAlign="center"
+        app:layout_constraintBottom_toBottomOf="@+id/symbol"
+        app:layout_constraintEnd_toStartOf="@+id/symbol"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@+id/symbol" />
 
     <TextView
         android:id="@+id/textView"
@@ -171,7 +188,7 @@
         android:id="@+id/quantity"
         android:layout_width="216dp"
         android:layout_height="41dp"
-        android:layout_marginTop="34dp"
+        android:layout_marginTop="30dp"
         android:ems="10"
         android:hint="Quantity"
         android:inputType="number"
@@ -182,15 +199,25 @@
 
     <EditText
         android:id="@+id/price"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
+        android:layout_width="216dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="36dp"
         android:ems="10"
         android:hint="Price"
         android:inputType="numberDecimal"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/textView3"
-        app:layout_constraintTop_toBottomOf="@+id/quantity" />
+        app:layout_constraintTop_toBottomOf="@+id/textView3" />
+
+    <EditText
+        android:id="@+id/symbol"
+        android:layout_width="216dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="20dp"
+        android:digits="qwertyuioplkjhgfdsazxcvbnm"
+        android:ems="10"
+        android:hint="Symbol"
+        android:inputType="textPersonName"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

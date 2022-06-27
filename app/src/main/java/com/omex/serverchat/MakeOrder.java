@@ -10,18 +10,21 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.Spinner;
-import android.widget.Toast;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
+import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import java.io.BufferedInputStream;
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.PushbackInputStream;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -40,20 +43,28 @@ import cz.msebera.android.httpclient.message.BasicNameValuePair;
 
 public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSelectedListener {
     private Spinner account, side,type,tif,destination;
-    private EditText quantity,price;
-    private List<String> ecn_name, ecn_short_name,  ecn_order_types , account_nick, account_auto_num;
+    private EditText symbol,quantity,price;
+    private List<String> ecn_name, ecn_short_name, account_nick, account_auto_num , ecn_order_types, type_list_option_name, type_list_option_value;
     private List<String> side_name, side_value, tif_name, tif_value;
     private  String order_account,order_side,order_type,order_tif,order_destination;
+
+    private String xmlString;
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_make_order);
 
+        setTitle("OMEX Order");
+        xmlString=null;
        // File file = new File( "LogonDetails-22062022.xml");
 
         ecn_name=new ArrayList<String>();
         ecn_short_name=new ArrayList<String>();
         ecn_order_types = new ArrayList<String>();
+        type_list_option_name = new ArrayList<String>();
+        type_list_option_value = new ArrayList<String>();
         account_nick=new ArrayList<String>();
         account_auto_num=new ArrayList<String>();
 
@@ -73,18 +84,33 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
         tif_name.add("GTX"); tif_value.add("5");
         tif_name.add("CLO"); tif_value.add("7");
 
+        getxmlfile();
 
+        symbol = (EditText)findViewById(R.id.symbol);
+        account = (Spinner) findViewById(R.id.account);
+        side= (Spinner) findViewById(R.id.side);
+        quantity = (EditText)findViewById(R.id.quantity);
+        price= (EditText)findViewById(R.id.price);
+        type= (Spinner) findViewById(R.id.type);
+        tif = (Spinner) findViewById(R.id.tif);
+        destination = (Spinner) findViewById(R.id.destination);
+
+
+    }
+
+    private void readdatafromxml() {
         try {
             // Get Document
             //Document document = builder.parse(new File("trader.xml"));
 
             AssetManager assetManager = getAssets();
-            InputStream is = assetManager.open("trader.xml");
+            //InputStream is = assetManager.open("trader.xml");
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
-            Document document = dBuilder.parse(is);
-
+            //Document document = dBuilder.parse(is);
+            Document document = dBuilder.parse(new InputSource(new StringReader(xmlString)));
             document.getDocumentElement().normalize();
+
 
             // Get all the element by the tag name
             NodeList tablelist = document.getElementsByTagName("Table1");
@@ -106,34 +132,25 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
                         if(detail.getNodeType() == Node.ELEMENT_NODE) {
                             Element detailElement = (Element) detail;
 
-                                tagname.add(detailElement.getTagName());
-                                textcontext.add(detailElement.getTextContent());
-                                System.out.println("     " + detailElement.getTagName() +"===="+detailElement.getTextContent());
+                            tagname.add(detailElement.getTagName());
+                            textcontext.add(detailElement.getTextContent());
+                            System.out.println("     " + detailElement.getTagName() +"===="+detailElement.getTextContent());
 
                             //System.out.println("     " + detailElement.getTagName() +"___"+detailElement.getTextContent());
 
                         }
                     }
                     System.out.println("\n \n ----------------");
+                    if (textcontext.get(tagname.indexOf("ecn_is_for_stock")).equals("1")) {
+                        ecn_name.add(textcontext.get(tagname.indexOf("ecn_name")));
+                        ecn_short_name.add(textcontext.get(tagname.indexOf("ecn_short_name")));
+                        ecn_order_types.add(textcontext.get(tagname.indexOf("ecn_order_types")));
+                        System.out.println("     " + ecn_name.size() + "<==>" + ecn_short_name.size());
 
+                    }
 
-                    //if (detailElement.getTagName().equals("ecn_is_for_stock") && detailElement.getTextContent().equals("1")){}
-                    //if (tagname.contains("ecn_is_for_stock")) {
-                        if (textcontext.get(tagname.indexOf("ecn_is_for_stock")).equals("1")) {
-                            ecn_name.add(textcontext.get(tagname.indexOf("ecn_name")));
-                            ecn_short_name.add(textcontext.get(tagname.indexOf("ecn_short_name")));
-                            ecn_order_types.add(textcontext.get(tagname.indexOf("ecn_order_types")));
-                            System.out.println("     " + ecn_name.size() + "<==>" + ecn_short_name.size());
-
-                        }
-                    //}
                 }
             }
- /*for(int i = 0; i <ecn_name.size(); i++){
-                System.out.println("         ecn_name-------->" + ecn_name.get(i) );
-                System.out.println("         ecn_short_name-->" + ecn_short_name.get(i) );
-            }  //for debugging*/
-
 
             NodeList tablelist2 = document.getElementsByTagName("Table2");
             Node table2;
@@ -147,7 +164,7 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
 
                     NodeList tabledetails =  table2.getChildNodes();
 
-                    List<String> tagname = new ArrayList<String>(),textcontext=new ArrayList<String>();
+                    //List<String> tagname = new ArrayList<String>(),textcontext=new ArrayList<String>();
                     for(int j = 0; j < tabledetails.getLength(); j++){
                         Node detail = tabledetails.item(j);
 
@@ -160,7 +177,7 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
                             if (detailElement.getTagName().equals("account_auto_num")){
                                 account_auto_num.add(detailElement.getTextContent());
                             }
-                            //textcontext.add(detailElement.getTextContent());
+
                             System.out.println("     " + detailElement.getTagName() +">>>"+detailElement.getTextContent());
 
                         }
@@ -168,12 +185,67 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
                     System.out.println("\n \n ----------------");
 
 
-
-                    //account_auto_num.add(textcontext.get(tagname.indexOf("account_auto_num")));
-                    //System.out.println("     " + account_nick.size() + "<==>" + account_auto_num.size());
-
                 }
             }
+
+
+            destination.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,ecn_name));
+            destination.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    order_destination=parent.getItemAtPosition(position).toString();
+                    type_list_option_name.clear();
+                    type_list_option_value.clear();
+                    decodeliststring( ecn_order_types.get(ecn_name.indexOf(order_destination)));
+
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+            account.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,account_nick));
+            account.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    order_account=parent.getItemAtPosition(position).toString();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+
+            side.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,side_name));
+            side.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    order_side=parent.getItemAtPosition(position).toString();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
+            tif.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,tif_name));
+            tif.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+                @Override
+                public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                    order_tif=parent.getItemAtPosition(position).toString();
+                }
+
+                @Override
+                public void onNothingSelected(AdapterView<?> parent) {
+
+                }
+            });
+
 
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
@@ -182,49 +254,19 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
 
-
-        account = (Spinner) findViewById(R.id.account);
-        side= (Spinner) findViewById(R.id.side);
-        quantity = (EditText)findViewById(R.id.quantity);
-        price= (EditText)findViewById(R.id.price);
-        type= (Spinner) findViewById(R.id.type);
-        tif = (Spinner) findViewById(R.id.tif);
-        destination = (Spinner) findViewById(R.id.destination);
-
-
-        getxmlfile();
-
-
-
-
-        destination.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,ecn_name));
-        destination.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                order_destination=parent.getItemAtPosition(position).toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        account.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,account_nick));
-        account.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                order_account=parent.getItemAtPosition(position).toString();
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
-
-        type.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,ecn_order_types));
+    private  void decodeliststring(String list){
+        String[] listoptions , temp;
+        /*List<String> type_list_option_name, type_list_option_value;
+        type_list_option_name = new ArrayList<String>();
+        type_list_option_value = new ArrayList<String>();*/
+        listoptions = list.split(",");
+        for(int i = 0; i <listoptions.length; i++){
+            temp = listoptions[i].split("/");
+            type_list_option_name.add(temp[0]); type_list_option_value.add(temp[1]);
+        }
+        type.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item, type_list_option_name));
         type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -237,39 +279,35 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
             }
         });
 
-        side.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,side_name));
-        side.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                order_side=parent.getItemAtPosition(position).toString();
-            }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+    }
+    public void send_order(View view){
+        String symbol_str,quantity_str, price_str;
+        String account_str, side_str, type_str, tif_str, destination_str;
+        String final_order_string;
 
-            }
-        });
+        symbol_str = symbol.getText().toString();
+        quantity_str = quantity.getText().toString();
+        price_str = price.getText().toString();
 
-        tif.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,tif_name));
-        tif.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                order_tif=parent.getItemAtPosition(position).toString();
-            }
+        type_str= type_list_option_value.get(type_list_option_name.indexOf(order_type));
+        account_str= account_auto_num.get(account_nick.indexOf(order_account));
+        side_str=side_value.get(side_name.indexOf(order_side));
+        tif_str= tif_value.get(tif_name.indexOf(order_tif));
+        destination_str = ecn_short_name.get(ecn_name.indexOf(order_destination));
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-
-            }
-        });
+        final_order_string= "1="+account_str+  "#54="+side_str+  "#55="+symbol_str+
+                "#38="+quantity_str  +"#44="+price_str+  "#40="+type_str+  "#59="+ tif_str+
+                "#1010="+destination_str+  "#553=DEMO_MASTER"+  "#1070=master-user1"+"#";
+        System.out.println("\n     ----order sent string----  \n"+final_order_string);
     }
 
     private void getxmlfile() {
         String login = "DEMO_MASTER";
         String username= "master-user1";
         String password= "testtrader";
-        AsyncTask<String, Integer, String> res = new ExecuteTask().execute(login,password ,username);
-        System.out.println("  --->>"+res);
+        new ExecuteTask().execute(login, password,username );
+
     }
     class ExecuteTask extends AsyncTask<String, Integer, String>
     {
@@ -284,9 +322,10 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
 
         @Override
         protected void onPostExecute(String result) {
-            //progressBar.setVisibility(View.GONE);
-            //progess_msz.setVisibility(View.GONE);
-            Toast.makeText(getApplicationContext(), result, Toast.LENGTH_SHORT).show();
+
+            System.out.println("         XML\n" + result );
+            xmlString=result;
+            readdatafromxml();
         }
 
     }
@@ -296,10 +335,10 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
         try
         {
             HttpClient httpClient=new DefaultHttpClient();
-            HttpPost httpPost=new HttpPost("http://204.93.141.72/oms/OMSLogin.asmx?op=GetOMSLogin");
+            HttpPost httpPost=new HttpPost("http://204.93.141.72/oms/OMSLogin.asmx/GetOMSLogin?loginId=DEMO_MASTER&pass=testtrader&username=master-user1");
 
             List<NameValuePair> list=new ArrayList<NameValuePair>();
-            list.add(new BasicNameValuePair("loginId:", valuse[0]));
+            list.add(new BasicNameValuePair("loginId", valuse[0]));
             list.add(new BasicNameValuePair("pass",valuse[1]));
             list.add(new BasicNameValuePair("username",valuse[2]));
             httpPost.setEntity(new UrlEncodedFormEntity(list));
@@ -315,18 +354,25 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
 
     }
     public String readResponse(HttpResponse res) {
-        InputStream is=null;
+        InputStream is,ins=null;
         String return_text="";
         try {
             is=res.getEntity().getContent();
-            BufferedReader bufferedReader=new BufferedReader(new InputStreamReader(is));
+            ins = checkForUtf8BOMAndDiscardIfAny(is);
+            BufferedReader bufferedReader=new BufferedReader(new InputStreamReader(ins));
             String line="";
+
             StringBuffer sb=new StringBuffer();
             while ((line=bufferedReader.readLine())!=null)
             {
                 sb.append(line);
+
             }
+
+
+
             return_text=sb.toString();
+
         } catch (Exception e)
         {
 
@@ -335,6 +381,16 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
 
     }
 
+    private static InputStream checkForUtf8BOMAndDiscardIfAny(InputStream inputStream) throws IOException {
+        PushbackInputStream pushbackInputStream = new PushbackInputStream(new BufferedInputStream(inputStream), 3);
+        byte[] bom = new byte[3];
+        if (pushbackInputStream.read(bom) != -1) {
+            if (!(bom[0] == (byte) 0xEF && bom[1] == (byte) 0xBB && bom[2] == (byte) 0xBF)) {
+                pushbackInputStream.unread(bom);
+                System.out.println("   BOM<--> ");
+            }
+        }
+        return pushbackInputStream; }
 
     @Override
     public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
