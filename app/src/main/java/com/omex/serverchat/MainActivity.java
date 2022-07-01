@@ -36,21 +36,17 @@ public class MainActivity extends AppCompatActivity {
     int port = Integer.parseInt("12000");
     static String user_name = "Andy2";
     EditText chat_box;
-    Socket socket ;
+    static Socket socket ;
     OutputStream output;
     PrintWriter writer;
     BufferedReader reader;
     InputStream input;
     public static String chat_partner_name;
-
+    String xmlstring;
     static MainActivity instance;
 
 
     RecyclerView chatboxview;
-    //update_chatbox updateChatbox;
-
-    /*boolean printlock;
-    private String got_msg_update;*/
 
 
     ArrayList<String> active_users;
@@ -63,7 +59,11 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.setThreadPolicy(policy);
 
         instance=this;
-
+        Bundle extras = getIntent().getExtras();
+        if (extras != null) {
+            xmlstring = extras.getString("xmlfiledata");
+            Log.d("xml ", "onCreate;;;;;"+xmlstring);
+        }
 
         RecyclerView recyclerView = findViewById(R.id.chat_box_recycler);
 /*
@@ -87,10 +87,6 @@ public class MainActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
 */
-
-
-
-
 
 
         /*try
@@ -204,23 +200,16 @@ public class MainActivity extends AppCompatActivity {
                 char[] buffer = new char[1000];
                 while (true) {
 
-                    //BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     Log.i("Message from Server 0", "run: 0 " );
 
                     charsRead = in.readLine();
 
                     //in.close();
-                    String serverMessage = charsRead;//new String(buffer).substring(0, charsRead);
+                    String serverMessage = charsRead;
                     if (serverMessage != null) {
-                        Log.i("Message from Server", "run: " + serverMessage.toString());
+
                         String got_msg = chk_msg(serverMessage);
                         Log.i("Message from Server 2", "run: " + got_msg);
-
-                        ///updateChatbox = new update_chatbox();
-                        //updateChatbox.execute(got_msg);
-
-                        /*got_msg_update=got_msg;
-                        printlock=true;*/
 
                         handler.post(new Runnable() {
                             public void run() {
@@ -239,49 +228,7 @@ public class MainActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
         }
-        /*public void run() {
 
-           //while (true)
-            try{
-                Log.d("msg listener", "run:0 "+ socket.isConnected());
-                //InputStream input = socket.getInputStream();
-                Log.d("msg listener", "run:1 "+ socket.isConnected());
-
-               // BufferedReader reader = new BufferedReader(new InputStreamReader(input));
-
-                Log.d("text  msg  listener ", "run: msg listener 3//");
-                String returned_msg = null;
-                while(true){
-                    if (reader.ready()
-
-
-                    && (returned_msg=reader.readLine()) != null) {
-                        Log.d("msg listener", "run:2 "+ socket.isConnected());
-                        do{
-                            returned_msg = reader.readLine();
-                        }
-                        while(returned_msg!= null);
-
-
-                        returned_msg=reader.readLine();
-                        Log.d("text msg listener","<<run: /msg listener3.5 "+ returned_msg);
-
-
-                        //returned_msg = chk_msg(returned_msg);
-
-                        Log.d("text msg listener", "run: msg listener 4 >>" + returned_msg);
-                        chat_box.append( System.getProperty("line.separator") + returned_msg);
-                        break;
-                    }
-                }
-                Log.d("msg listener", "run: 3 "+ socket.isConnected());
-                //input.close();
-                Log.d("msg listener", "run: 4"+ socket.isConnected());
-            }catch(Exception e){
-                System.out.println("msg listener" + e.getMessage());
-            }
-
-        }*/
     }
 
 /*
@@ -386,15 +333,13 @@ public class MainActivity extends AppCompatActivity {
         {
             clientset = msg.split("#");
 
-            Log.d("AG",msg+"//chk_msg 2 :>");
-
             /*for (int count = 1; count<clientset.length -1; count++){
                 if (active_users.indexOf(clientset[count])==-1){
                     active_users.add(clientset[count]);
                     Log.d("server activeuser", "chk_msg : 2.5 userlist"+ clientset[count]);
                 }
             }*/
-            // list nikalni hai
+
             int lenght= clientset.length;
             Log.d("AG",msg+"//chk_msg: 3 >/"+clientset[0] );
             return clientset[lenght-1];
@@ -405,14 +350,9 @@ public class MainActivity extends AppCompatActivity {
 
     public void orderbtn(View v2){
 
-
         Intent intent = new Intent(MainActivity.this,MakeOrder.class);
-        /*if (clientset!= null) {
-            String[] templist = Arrays.copyOfRange(clientset, 0, clientset.length - 1);
-            intent.putExtra("username_list", templist *//*active_users*//*);
-        }*/
+        intent.putExtra("xmlfiledata",xmlstring);
         startActivity(intent);
-        //this.finish();
 
     }
 
@@ -435,13 +375,9 @@ public class MainActivity extends AppCompatActivity {
         String rcvrcode ="$%$";
         String send_to = "Friend";
 
-
-
         if (chat_partner_name!= null){
             send_to=chat_partner_name;
         }
-
-
 
         Log.d("sendbtn", "sendbtn: before thread");
 
