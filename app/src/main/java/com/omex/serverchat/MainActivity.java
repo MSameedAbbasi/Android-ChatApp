@@ -1,11 +1,14 @@
 package com.omex.serverchat;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import android.app.slice.Slice;
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -17,6 +20,7 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.io.BufferedReader;
 import java.io.Console;
@@ -31,10 +35,12 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Objects;
+
 public class MainActivity extends AppCompatActivity {
     String hostname = "192.168.0.57";
     int port = Integer.parseInt("12000");
-    static String user_name = "Andy2";
+    static String user_name ;
     EditText chat_box;
     static Socket socket ;
     OutputStream output;
@@ -58,14 +64,23 @@ public class MainActivity extends AppCompatActivity {
         StrictMode.ThreadPolicy policy = new StrictMode.ThreadPolicy.Builder().permitAll().build();
         StrictMode.setThreadPolicy(policy);
 
+        ActionBar actionBar;
+        actionBar = getSupportActionBar();
+        ColorDrawable colorDrawable
+                = new ColorDrawable(getResources().getColor( R.color.tempcolor));
+        actionBar.setBackgroundDrawable(colorDrawable);
+
+        user_name= LoginPage.username;
+        Objects.requireNonNull(getSupportActionBar()).setTitle("COSA OMEX");
+        setTitle(user_name);
         instance=this;
         Bundle extras = getIntent().getExtras();
-        if (extras != null) {
+        /*if (extras != null) {
             xmlstring = extras.getString("xmlfiledata");
             Log.d("xml ", "onCreate;;;;;"+xmlstring);
-        }
+        }*/
 
-        RecyclerView recyclerView = findViewById(R.id.chat_box_recycler);
+        //RecyclerView recyclerView = findViewById(R.id.chat_box_recycler);
 /*
 
         // Create and set the layout manager
@@ -131,20 +146,27 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException ex) {
 
             System.out.println("I/O error hai: " + ex.getMessage());
-        }
+        } catch (Exception e){
+            runOnUiThread(new Runnable() {
 
+                public void run() {
+
+                    Toast.makeText(getApplicationContext(), "SERVER Not Found", Toast.LENGTH_SHORT).show();
+
+                }
+            });
+        }
 
         /*Thread msg_update_thread = new Thread(new  update_chatbox());
         msg_update_thread.start();*/
 
-
-
         chatboxview= findViewById(R.id.chat_box_recycler);
         chat_box =  findViewById(R.id.chat_box);
+        chat_box.setTextColor(Color.WHITE);
         listen_to_messages();
         register_name();
 
-        ////// sockets /connections close ker k dekhnay hai output.close
+
 
         Log.d("oncreate", "onCreate: run: register name end");
         //listen_to_messages();
@@ -162,7 +184,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void on_openchat(){
-        getSupportActionBar().setTitle(chat_partner_name);
+        Objects.requireNonNull(getSupportActionBar()).setTitle(chat_partner_name);
         chat_box.setText("");
     }
     Handler handler= new Handler();
@@ -219,7 +241,7 @@ public class MainActivity extends AppCompatActivity {
                             }
                         });
 
-                        //chat_box.append(System.getProperty("line.separator") + got_msg);
+
                         Log.i("Message from Server 3", "run: " + got_msg);
 
                     }
@@ -272,8 +294,7 @@ public class MainActivity extends AppCompatActivity {
 
                 //InputStream input = socket.getInputStream();
                 Log.d("send name", "run: sock2 "+ socket.isConnected());
-                //reader = new BufferedReader(new InputStreamReader(input));
-                Log.d("name send", "run: Rread text name3 /" + text);
+
                 String returned_msg =""; //= reader.readLine();
 
                 /*BufferedReader reader = new BufferedReader(new InputStreamReader(input));
@@ -312,16 +333,6 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
-       /* private String chk_msg(String msg){
-            if (msg.startsWith("#"))
-            {
-                String[] clientset = msg.split("#",0);
-                // list nikalni hai
-                int lenght= clientset.length;
-                return clientset[ lenght - 1];
-            }
-            return msg;
-        }*/
     }
 
 
@@ -341,7 +352,7 @@ public class MainActivity extends AppCompatActivity {
             }*/
 
             int lenght= clientset.length;
-            Log.d("AG",msg+"//chk_msg: 3 >/"+clientset[0] );
+
             return clientset[lenght-1];
 
         }
@@ -384,7 +395,7 @@ public class MainActivity extends AppCompatActivity {
         EditText message_box_text =  findViewById(R.id.message_box);
         //String text = txt1.getText().toString();
 
-        for (int i =  send_to.length(); i < 10; i++)        //test it
+        for (int i =  send_to.length(); i < 20; i++)        //test it
         {
             send_to += " ";
         }
@@ -446,5 +457,4 @@ public class MainActivity extends AppCompatActivity {
             }
         }
     }
-
 }

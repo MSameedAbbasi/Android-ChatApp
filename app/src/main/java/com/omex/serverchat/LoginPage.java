@@ -1,8 +1,11 @@
 package com.omex.serverchat;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
@@ -54,7 +57,7 @@ public class LoginPage extends AppCompatActivity implements AdapterView.OnItemSe
     private int counter = 3;
     private String[] ssl_option={"True" , "False"};
     public  static   String ssl_choice,ip,port;
-    public static String xmlString;
+    public static String xmlString, user_name;
     Intent intent1;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,7 +72,17 @@ public class LoginPage extends AppCompatActivity implements AdapterView.OnItemSe
         SSL = (Spinner) findViewById(R.id.SSL);
         login = (Button)findViewById(R.id.loginbtn);
 
-        SSL.setAdapter(new ArrayAdapter<>(LoginPage.this, android.R.layout.simple_spinner_dropdown_item,ssl_option));
+        ActionBar actionBar;
+        actionBar = getSupportActionBar();
+        ColorDrawable colorDrawable
+                = new ColorDrawable(getResources().getColor( R.color.tempcolor));
+        actionBar.setBackgroundDrawable(colorDrawable);
+
+        user_name=name.getText().toString();
+
+
+
+        SSL.setAdapter(new ArrayAdapter<>(LoginPage.this,  R.layout.spinner_custom,ssl_option));
         SSL.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -93,6 +106,7 @@ public class LoginPage extends AppCompatActivity implements AdapterView.OnItemSe
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
+                login.setEnabled(false);
                 validate(traderid.getText().toString() ,name.getText().toString(), password.getText().toString());
             }
         });
@@ -106,17 +120,19 @@ public class LoginPage extends AppCompatActivity implements AdapterView.OnItemSe
 
             getxmlfile(traderid,userName,userPassword,ip,port,ssl_choice);
 
-
             myHandler = new Handler() {
 
                 @Override
                 public void handleMessage(Message msg) {
                     Log.d("logon---text 1", "doInd: "+ xmlString);
+
                     Intent intent1 = new Intent(LoginPage.this, MainActivity.class);
                     intent1.putExtra("xmlfiledata",xmlString);
                     startActivity(intent1);
+
                 }
             };
+
             /*while(true){
                 if(xmlString.length()>1){
                     break;
@@ -128,8 +144,14 @@ public class LoginPage extends AppCompatActivity implements AdapterView.OnItemSe
 
         }else{
             counter--;
+            runOnUiThread(new Runnable() {
 
-            Toast.makeText(getApplicationContext(), "Wrong Credentials",Toast.LENGTH_SHORT).show();
+                public void run() {
+
+                    Toast.makeText(getApplicationContext(), "Wrong Credentials",Toast.LENGTH_SHORT).show();
+                    login.setEnabled(true);
+                }
+            });
             //Info.setText("No of attempts remaining: " + String.valueOf(counter));
 
             if(counter == 0){
@@ -141,7 +163,7 @@ public class LoginPage extends AppCompatActivity implements AdapterView.OnItemSe
         /*String login = "DEMO_MASTER";
         String username= "master-user1";
         String password= "testtrader";*/
-
+        user_name = name.getText().toString();
          new xmlExecuteTask().execute(login,username, password ,ip,port,ssl_choice);
         /*SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
         String currentDate = sdf.format(new Date());
@@ -193,11 +215,17 @@ public class LoginPage extends AppCompatActivity implements AdapterView.OnItemSe
             String filename="logon" + currentDate +".txt";
             String res ="";
             res = PostData(params);
-            if (res.isEmpty() ){
-                Log.d("logon failed", "doInBackground: "+ filename);
-            }
-            else {
-                Log.d("logon file", "doInBackground: " + filename+res);
+            if (res.contains("Table1")){
+                runOnUiThread(new Runnable() {
+
+                    public void run() {
+
+                        Toast.makeText(getApplicationContext(), "Preparing COSA", Toast.LENGTH_SHORT).show();
+                        login.setEnabled(true);
+                    }
+                });
+                myHandler.sendEmptyMessage(0);
+                Log.d("logon file,", "doInBackground: " + filename+res);
 
                 try {
                     FileOutputStream fOut = openFileOutput(filename, MODE_PRIVATE);
@@ -226,13 +254,25 @@ public class LoginPage extends AppCompatActivity implements AdapterView.OnItemSe
                 {ioe.printStackTrace();}
 
             }
-            myHandler.sendEmptyMessage(0);
+            else {
+                Log.d("logon failed,", "doInBackground: "+ filename);
+                runOnUiThread(new Runnable() {
+
+                    public void run() {
+                        login.setEnabled(true);
+                        Toast.makeText(getApplicationContext(), "INCORRECT CREDENTIALS", Toast.LENGTH_SHORT).show();
+
+                    }
+                });
+            }
+            xmlString= res;
+
             return res;
         }
 
         @Override
         protected void onPostExecute(String result) {
-
+            user_name = name.getText().toString();
             System.out.println("     XML\n" + result );
             xmlString=result;
             //readdatafromxml();
@@ -240,10 +280,11 @@ public class LoginPage extends AppCompatActivity implements AdapterView.OnItemSe
         }
 
     }
+    public static  String username;
     public String PostData(String[] valuse) {
         String s="";
         String login= valuse[0];
-        String username= valuse[1];
+        username= valuse[1];
         String password=valuse[2];
 
         /*String login = "DEMO_MASTER";

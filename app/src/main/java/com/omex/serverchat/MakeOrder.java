@@ -1,14 +1,20 @@
 package com.omex.serverchat;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 
+import android.app.Application;
+import android.app.Notification;
 import android.content.res.AssetManager;
 import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.InputType;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -25,6 +31,7 @@ import org.xml.sax.SAXException;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -47,6 +54,7 @@ import java.util.List;
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
+
 
 import cz.msebera.android.httpclient.HttpEntity;
 import cz.msebera.android.httpclient.HttpResponse;
@@ -84,6 +92,13 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
 
 
         setTitle("OMEX Order");
+
+
+        ActionBar actionBar;
+        actionBar = getSupportActionBar();
+        ColorDrawable colorDrawable
+                = new ColorDrawable(getResources().getColor( R.color.tempcolor));
+        actionBar.setBackgroundDrawable(colorDrawable);
         xmlString=null;
        // File file = new File( "LogonDetails-22062022.xml");
 
@@ -127,7 +142,8 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
         destination = (Spinner) findViewById(R.id.destination);
         order_btn = (Button)findViewById(R.id.send_order);
 
-        account.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,account_nick));
+
+        account.setAdapter(new ArrayAdapter<>(MakeOrder.this, R.layout.spinner_custom,account_nick));
         account.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -140,7 +156,7 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
             }
         });
 
-        destination.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item, sorted_ecn_name));
+        destination.setAdapter(new ArrayAdapter<>(MakeOrder.this, R.layout.spinner_custom, sorted_ecn_name));
         destination.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -161,17 +177,19 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
             }
         });
 
-        side.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,side_name));
+        side.setAdapter(new ArrayAdapter<>(MakeOrder.this, R.layout.spinner_custom,side_name));
         side.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 order_side=parent.getItemAtPosition(position).toString();
-                    /*if (order_side.equals("BUY")){
-                        order_btn.setBackgroundColor(Color.GREEN);
+                    if (order_side.equals("BUY")){
+                        order_btn.setBackgroundColor(ContextCompat.getColor(MakeOrder.this,R.color.LTGREEN));
+                        symbol.setTextColor(getResources().getColor(R.color.LTGREEN));
                     }
                     if (order_side.equals("SELL")){
-                        order_btn.setBackgroundColor(Color.RED);
-                    }*/
+                        order_btn.setBackgroundColor(ContextCompat.getColor(MakeOrder.this,R.color.LTRED));
+                        symbol.setTextColor(getResources().getColor(R.color.LTRED));
+                    }
             }
 
             @Override
@@ -180,7 +198,7 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
             }
         });
 
-        tif.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item,tif_name));
+        tif.setAdapter(new ArrayAdapter<>(MakeOrder.this, R.layout.spinner_custom,tif_name));
         tif.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -197,8 +215,9 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
     private void readdatafromxml() {
         try {
             // Get Document
-            //Document document = builder.parse(new File("trader.xml"));
+
             //String readxml = logonread();
+            // Document document = dBuilder.parse(new File("trader.xml"));
             SimpleDateFormat sdf = new SimpleDateFormat("yyyyMMdd");
             String currentDate = sdf.format(new Date());
             String filename="logon" + currentDate +".txt";
@@ -207,6 +226,9 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document document = dBuilder.parse(new InputSource(new StringReader(LoginPage.xmlString)));
+
+
+
             //Document document = dBuilder.parse(filename);
             document.getDocumentElement().normalize();
 
@@ -240,7 +262,7 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
                         }
                     }
                     System.out.println("\n \n ----------------");
-                    if (textcontext.get(tagname.indexOf("ecn_is_for_stock")).equals("1")) {
+                    if (textcontext.get(tagname.indexOf("ecn_is_for_stock")).equals("1") || textcontext.get(tagname.indexOf("ecn_is_for_stock")).equals("0") ) {
                         ecn_name.add(textcontext.get(tagname.indexOf("ecn_name")));
                         sorted_ecn_name.add(textcontext.get(tagname.indexOf("ecn_name")));
                         ecn_short_name.add(textcontext.get(tagname.indexOf("ecn_short_name")));
@@ -291,9 +313,6 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
             Collections.sort(sorted_ecn_name);
 
 
-
-
-
         } catch (ParserConfigurationException e) {
             e.printStackTrace();
         } catch (SAXException e) {
@@ -335,7 +354,7 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
             temp = listoptions[i].split("/");
             type_list_option_name.add(temp[0]); type_list_option_value.add(temp[1]);
         }
-        type.setAdapter(new ArrayAdapter<>(MakeOrder.this, android.R.layout.simple_spinner_dropdown_item, type_list_option_name));
+        type.setAdapter(new ArrayAdapter<>(MakeOrder.this, R.layout.spinner_custom, type_list_option_name));
         type.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -521,4 +540,5 @@ public class MakeOrder extends AppCompatActivity implements AdapterView.OnItemSe
     public void onNothingSelected(AdapterView<?> parent) {
 
     }
+
 }

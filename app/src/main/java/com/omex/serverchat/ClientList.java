@@ -2,9 +2,12 @@ package com.omex.serverchat;
 
 import static android.content.ContentValues.TAG;
 
+import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -25,6 +28,12 @@ public class ClientList extends AppCompatActivity {
 
         listView = (ListView) findViewById(R.id.client_listview);
         Log.d("cli list", "onCreate: if 0");
+        setTitle("LIST");
+        ActionBar actionBar;
+        actionBar = getSupportActionBar();
+        ColorDrawable colorDrawable
+                = new ColorDrawable(getResources().getColor( R.color.tempcolor));
+        actionBar.setBackgroundDrawable(colorDrawable);
         Bundle extras = getIntent().getExtras();
         if (extras != null) {
             userlist = extras.getStringArray("username_list");
@@ -32,15 +41,17 @@ public class ClientList extends AppCompatActivity {
             //The key argument here must match that used in the other activity
         }
         ArrayList<String> arrayList = new ArrayList<>();
+        try {
+            for (int i = 0; i < userlist.length; i++) {
+                if (arrayList.contains(userlist[i]) || userlist[i].equals(MainActivity.user_name) || userlist[i].equals("")) {
 
-        for (int i=0 ; i< userlist.length;i++){
-            if (arrayList.contains(userlist[i]) || userlist[i].equals(MainActivity.user_name) || userlist[i].equals("")){
-
-            }else{
-                arrayList.add(userlist[i]);
+                } else {
+                    arrayList.add(userlist[i]);
+                }
             }
+        }catch(Exception e){
+            System.out.println("client_ list"+e);
         }
-
         arrayList.remove("");
         arrayList.remove("\n");
         arrayList.remove(null);
@@ -50,7 +61,7 @@ public class ClientList extends AppCompatActivity {
         arrayList.add("Kashif");
         arrayList.add("Daniyal");
 */
-        ArrayAdapter arrayAdapter = new ArrayAdapter(this, android.R.layout.simple_list_item_activated_1,arrayList);
+        ArrayAdapter arrayAdapter = new ArrayAdapter(this, R.layout.spinner_custom,arrayList);
         listView.setAdapter(arrayAdapter);
 
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
