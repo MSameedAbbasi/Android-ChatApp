@@ -48,7 +48,7 @@
         android:focusable="auto"
         android:focusableInTouchMode="false"
         android:gravity="start|top"
-        android:inputType="textMultiLine"
+        android:inputType="textMultiLine|textNoSuggestions"
         android:selectAllOnFocus="false"
         android:textColor="@color/textcolor"
         app:layout_constraintBottom_toTopOf="@+id/message_box"

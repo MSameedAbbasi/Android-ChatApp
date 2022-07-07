@@ -13,6 +13,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.StrictMode;
+import android.text.InputType;
 import android.text.Layout;
 import android.util.Log;
 import android.view.View;
@@ -163,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
         chatboxview= findViewById(R.id.chat_box_recycler);
         chat_box =  findViewById(R.id.chat_box);
         chat_box.setTextColor(Color.WHITE);
+        //chat_box.setInputType(InputType.TYPE_TEXT_FLAG_NO_SUGGESTIONS);
         listen_to_messages();
         register_name();
 
